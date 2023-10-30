@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.40.3" />
+    <PackageReference Include="GraphQL.Client" Version="6.0.1" />
+    <PackageReference Include="GraphQL.Client.Abstractions" Version="6.0.1" />
+    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CurentaCommonCore\CurentaCommonCore\CurentaCommonCore.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>
