@@ -23,7 +23,7 @@ namespace CompositionService.Controllers
         [HttpGet("GetPatientsWithTasksCount")]
         [Authorize(Roles = nameof(UserRoles.CurentaSuperAdmin) + "," + nameof(UserRoles.CurentaOps) + "," + nameof(UserRoles.LTCAdmin) + "," + nameof(UserRoles.Nurse) + "," + nameof(UserRoles.Doctor) + "," + nameof(UserRoles.CareGiver) + "," + nameof(UserRoles.MedTech))]
         [EnableCors]
-        public async Task<IActionResult> GetPatientsWithTasksCount([FromBody] PatientFilter filters)
+        public async Task<IActionResult> GetPatientsWithTasksCount([FromQuery] PatientFilter filters)
         {
             try
             {
