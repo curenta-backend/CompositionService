@@ -111,5 +111,72 @@ namespace Infrastructure.ExternalClients
             }
         }
 
+
+        public async Task<Result<GenericResponse<List<CurentaTaskHistoryViewModel>>>> GetTasksHistory(CurentaTaskFilter filter, PaginationFilter paginationFilter)
+        {
+            try
+            {
+                var url = _configuration["Urls:TaskManagerServiceURL"] + "/api/Task/GetTasksHistory";
+                var queryParameters = new Dictionary<string, string>();
+
+                // Conditionally add parameters to the query dictionary if they have values
+                if (filter.LoggedInUserId.HasValue)
+                {
+                    queryParameters["LoggedInUserId"] = filter.LoggedInUserId.ToString();
+                }
+                if (filter.CreatedByUserId.HasValue)
+                {
+                    queryParameters["CreatedByUserId"] = filter.CreatedByUserId.ToString();
+                }
+                if (filter.AssignedToUserId.HasValue)
+                {
+                    queryParameters["AssignedToUserId"] = filter.AssignedToUserId.ToString();
+                }
+                if (filter.FacilityId.HasValue)
+                {
+                    queryParameters["FacilityId"] = filter.FacilityId.ToString();
+                }
+                if (filter.PatientId.HasValue)
+                {
+                    queryParameters["PatientId"] = filter.PatientId.ToString();
+                }
+                if (filter.TaskSeverity.HasValue)
+                {
+                    queryParameters["TaskSeverity"] = filter.TaskSeverity.ToString();
+                }
+                if (filter.IncludeTaskWithId.HasValue)
+                {
+                    queryParameters["IncludeTaskWithId"] = filter.IncludeTaskWithId.ToString();
+                }
+                queryParameters["PageNumber"] = paginationFilter.PageNumber.ToString();
+                queryParameters["PageSize"] = paginationFilter.PageSize.ToString();
+
+                // Create a query string from the dictionary
+                var queryString = string.Join("&", queryParameters.Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value)}"));
+
+                // Append the query string to the URL
+                if (!string.IsNullOrEmpty(queryString))
+                {
+                    url += "?" + queryString;
+                }
+
+                using var client = _httpClientFactory.CreateClient();
+                var response = await client.GetAsync(url);
+                var res = JsonConvert.DeserializeObject<GenericResponse<List<CurentaTaskHistoryViewModel>>>(await response.Content.ReadAsStringAsync());
+
+                if (res == null || !res.IsSuccess || (res.ValidationErrors != null && res.ValidationErrors.Any()))
+                {
+                    return Result.Failure<GenericResponse<List<CurentaTaskHistoryViewModel>>>(string.Join("; ", res.ValidationErrors.Select(e => e.Error)));
+                }
+
+                return res;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GenericResponse<List<CurentaTaskHistoryViewModel>>>(ex.Message);
+            }
+        }
+
+
     }
 }

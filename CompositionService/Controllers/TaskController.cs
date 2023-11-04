@@ -38,7 +38,25 @@ namespace CompositionService.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
         }
+
+        [HttpGet("GetTasksHistory")]
+        [Authorize]
+        public async Task<IActionResult> GetTasksHistory([FromQuery] CurentaTaskFilter filter, [FromQuery] PaginationFilter paginationFilter)
+        {
+            try
+            {
+                //var userRole = HttpContext.User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+                var res = await _taskService.GetTasksHistory(filter, paginationFilter);
+                if (res.IsFailure)
+                    return BadRequest(res.Error);
+                return Ok(res.Value);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

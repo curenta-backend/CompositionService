@@ -47,12 +47,33 @@ namespace Application.Services
             }      
         }
 
+        public async Task<Result<GenericResponse<List<CurentaTaskHistoryViewModel>>>> GetTasksHistory(CurentaTaskFilter filter, PaginationFilter paginationFilter)
+        {
+            try
+            {
+                var tasksResult = await _taskClient.GetTasksHistory(filter, paginationFilter);
+                if (tasksResult.IsFailure)
+                    return Result.Failure<GenericResponse<List<CurentaTaskHistoryViewModel>>>(tasksResult.Error);
+
+                tasksResult.Value.Data = await FillTaskHistoryAdditinalDetails(tasksResult.Value.Data);
+
+                var sortNum = 1;
+                tasksResult.Value.Data = tasksResult.Value.Data.Select(t => { t.SortNum = sortNum++; return t; }).ToList();
+
+                return tasksResult.Value;
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<GenericResponse<List<CurentaTaskHistoryViewModel>>>(ex.Message);
+            }
+        }
+
         private async Task<List<CurentaTaskViewModel>> FillTaskAdditinalDetails(List<CurentaTaskViewModel> tasks)
         {
             try
             {
                 //tasks = await FillUsersNamesAsync(tasks);//todo
-                tasks = await FillPatientsNamesAsync(tasks);
+                tasks = await FillTaskPatientsNamesAsync(tasks);
                 //tasks = await FillTaskCompletionAsync(tasks);//todo
                 return tasks;
             }
@@ -63,7 +84,57 @@ namespace Application.Services
             }
         }
 
-        private async Task<List<CurentaTaskViewModel>> FillPatientsNamesAsync(List<CurentaTaskViewModel> tasks)
+        private async Task<List<CurentaTaskHistoryViewModel>> FillTaskHistoryAdditinalDetails(List<CurentaTaskHistoryViewModel> tasks)
+        {
+            try
+            {
+                //tasks = await FillUsersNamesAsync(tasks);//todo
+                tasks = await FillTaskHistoryPatientsNamesAsync(tasks);
+                //tasks = await FillTaskCompletionAsync(tasks);//todo
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        private async Task<List<CurentaTaskViewModel>> FillTaskPatientsNamesAsync(List<CurentaTaskViewModel> tasks)
+        {
+            try
+            {
+                var patientsIds = new List<Guid>();
+
+                patientsIds.AddRange(tasks.Where(t => t.TaskPatients != null).SelectMany(t => t.TaskPatients).Select(t => t.PatientId).Distinct().ToList());
+
+                if (patientsIds != null && patientsIds.Any())
+                {
+                    var patientsResult = await _patientClient.GetPatientsNamesByIds(patientsIds);
+                    if (patientsResult.IsSuccess == false)
+                        return tasks;
+
+                    if (patientsResult != null && patientsResult.IsSuccess && patientsResult.Data != null)
+                    {
+                        foreach (var task in tasks)
+                        {
+                            foreach (var patient in task.TaskPatients)
+                            {
+                                patient.PatientName = patientsResult.Data.FirstOrDefault(u => u.Id == patient.PatientId) != null ? (patientsResult.Data.FirstOrDefault(u => u.Id == patient.PatientId)?.Name) : "Patient Not Found";
+                            }
+                        }
+                    }
+                }
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        private async Task<List<CurentaTaskHistoryViewModel>> FillTaskHistoryPatientsNamesAsync(List<CurentaTaskHistoryViewModel> tasks)
         {
             try
             {

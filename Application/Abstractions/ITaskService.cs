@@ -15,5 +15,7 @@ namespace Application.Abstractions
     public interface ITaskService
     {
         public Task<Result<GenericResponse<List<CurentaTaskViewModel>>>> GetOpenTasksFiltered(CurentaTaskFilter filter, PaginationFilter paginationFilter);
+        public Task<Result<GenericResponse<List<CurentaTaskHistoryViewModel>>>> GetTasksHistory(CurentaTaskFilter filter, PaginationFilter paginationFilter);
+
     }
 }

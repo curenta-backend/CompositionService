@@ -16,6 +16,7 @@ namespace Domain.Abstractions
     {
         Task<Result<List<PatientTaskCountModel>>> GetOpenTasksCountPerPatient(long? facilityId);
         Task<Result<GenericResponse<List<CurentaTaskViewModel>>>> GetOpenTasksFiltered(CurentaTaskFilter filter, PaginationFilter paginationFilter);
+        Task<Result<GenericResponse<List<CurentaTaskHistoryViewModel>>>> GetTasksHistory(CurentaTaskFilter filter, PaginationFilter paginationFilter);
 
     }
 }
