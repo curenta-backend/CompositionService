@@ -122,6 +122,7 @@ namespace Application.Services
                             {
                                 patient.PatientName = patientsResult.Data.FirstOrDefault(u => u.Id == patient.PatientId) != null ? (patientsResult.Data.FirstOrDefault(u => u.Id == patient.PatientId)?.Name) : "Patient Not Found";
                             }
+                            task.TaskPatients = task.TaskPatients.OrderBy(p => p.PatientName).ToList();
                         }
                     }
                 }
