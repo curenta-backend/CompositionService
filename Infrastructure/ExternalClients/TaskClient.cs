@@ -7,6 +7,8 @@ using Domain.Abstractions;
 using Domain.Filters;
 using Domain.ViewModels;
 using GraphQL;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -22,11 +24,15 @@ namespace Infrastructure.ExternalClients
     {
         private readonly IHttpClientFactory _httpClientFactory;
         IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _token;
 
-        public TaskClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public TaskClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+            _token = _httpContextAccessor.HttpContext?.GetTokenAsync("access_token").Result;
         }
         public async Task<Result<List<PatientTaskCountModel>>> GetOpenTasksCountPerPatient(long? facilityId)
         {
@@ -36,6 +42,8 @@ namespace Infrastructure.ExternalClients
                 if (facilityId != null && facilityId.Value > 0)
                     url = url + "?facilityId=" + facilityId;
                 using var client = _httpClientFactory.CreateClient();
+                if (!string.IsNullOrEmpty(_token))
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", _token);
                 var response = await client.GetAsync(url);
                 var res = JsonConvert.DeserializeObject<List<PatientTaskCountModel>>(response.Content.ReadAsStringAsync().Result);
                 return res;
@@ -95,6 +103,8 @@ namespace Infrastructure.ExternalClients
                 }
 
                 using var client = _httpClientFactory.CreateClient();
+                if (!string.IsNullOrEmpty(_token))
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", _token);
                 var response = await client.GetAsync(url);
                 var res = JsonConvert.DeserializeObject < GenericResponse<List<CurentaTaskViewModel>>>(await response.Content.ReadAsStringAsync());
 
@@ -161,6 +171,8 @@ namespace Infrastructure.ExternalClients
                 }
 
                 using var client = _httpClientFactory.CreateClient();
+                if (!string.IsNullOrEmpty(_token))
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", _token);
                 var response = await client.GetAsync(url);
                 var res = JsonConvert.DeserializeObject<GenericResponse<List<CurentaTaskHistoryViewModel>>>(await response.Content.ReadAsStringAsync());
 
